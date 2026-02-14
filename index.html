@@ -3,172 +3,870 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matripuntos - Gamificación para Parejas</title>
+    <title>Matripuntos - Admin Dashboard</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Urbanist', sans-serif;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .sidebar {
+            transition: transform 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar.closed {
+                transform: translateX(-100%);
+            }
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+        
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        
+        .animate-slide-in {
+            animation: slideIn 0.4s ease-out;
         }
-        .animate-float {
-            animation: float 3s ease-in-out infinite;
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="min-h-screen">
-        <!-- Hero Section -->
-        <div class="gradient-bg text-white py-20 px-6">
-            <div class="max-w-4xl mx-auto text-center">
-                <div class="text-8xl mb-6 animate-float">💜</div>
-                <h1 class="text-5xl md:text-6xl font-bold mb-4">Matripuntos</h1>
-                <p class="text-xl md:text-2xl mb-8 opacity-90">Sistema de gamificación para parejas</p>
-                <p class="text-lg mb-12 max-w-2xl mx-auto">
-                    Transforma tu relación en un juego divertido. Gana puntos por acciones positivas,
-                    canjea recompensas y mantén un balance justo en tu pareja.
-                </p>
-                <div class="flex flex-col md:flex-row gap-4 justify-center">
-                    <a href="/app/" class="inline-block px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:shadow-2xl transition-all transform hover:scale-105">
-                        🎮 Abrir App Principal
-                    </a>
-                    <a href="/admin/" class="inline-block px-8 py-4 bg-white bg-opacity-20 backdrop-blur text-white rounded-xl font-bold text-lg hover:bg-opacity-30 transition-all">
-                        📊 Panel Admin
-                    </a>
-                </div>
-            </div>
-        </div>
+<body>
+    <div id="root"></div>
 
-        <!-- Features Section -->
-        <div class="max-w-6xl mx-auto py-20 px-6">
-            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">Características Principales</h2>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
-                    <div class="text-5xl mb-4">⚡</div>
-                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Sistema de Puntos</h3>
-                    <p class="text-gray-600">Gana puntos por cada acción positiva. Lavar platos, cocinar, dar masajes... ¡todo cuenta!</p>
-                </div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
-                    <div class="text-5xl mb-4">🎁</div>
-                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Recompensas</h3>
-                    <p class="text-gray-600">Canjea tus puntos por recompensas personalizadas: noche de películas, salidas, días libres...</p>
-                </div>
+        // ==================== MOCK DATA ====================
+        const mockData = {
+            kpis: {
+                activeUsers: 12458,
+                activeUsersChange: 5.2,
+                totalCouples: 6229,
+                couplesChange: 2.8,
+                actionsToday: 34892,
+                actionsChange: 8.1,
+                rewardsToday: 8234,
+                rewardsChange: -1.5,
+                revenueToday: 4582,
+                revenueChange: 12.3,
+                avgStreak: 23.4,
+                streakChange: 0.8
+            },
+            alerts: [
+                { id: 1, type: 'critical', title: 'Tasa de error API aumentó a 2.1%', time: '15 minutos' },
+                { id: 2, type: 'warning', title: 'Tiempo de carga promedio: 3.2s', time: '1 hora' },
+                { id: 3, type: 'info', title: '50 nuevas parejas registradas', time: '5 minutos' }
+            ],
+            users: [
+                { id: 1234, email: 'juan@mail.com', plan: 'Premium', registered: '2025-08-15', hasPair: true, streak: 47 },
+                { id: 1235, email: 'maria@mail.com', plan: 'Premium', registered: '2025-08-15', hasPair: true, streak: 47 },
+                { id: 1236, email: 'pedro@mail.com', plan: 'Free', registered: '2026-01-20', hasPair: true, streak: 12 },
+                { id: 1237, email: 'ana@mail.com', plan: 'Free', registered: '2026-01-20', hasPair: true, streak: 12 },
+                { id: 1238, email: 'luis@mail.com', plan: 'Free', registered: '2026-02-01', hasPair: false, streak: 0 },
+            ],
+            couples: [
+                { id: 501, user1: 'Juan (1234)', user2: 'María (1235)', since: '6 meses', status: 'active' },
+                { id: 502, user1: 'Pedro (1236)', user2: 'Ana (1237)', since: '3 semanas', status: 'active' },
+                { id: 503, user1: 'Luis (1240)', user2: '[Esperando]', since: '2 días', status: 'pending' }
+            ],
+            tickets: [
+                { id: 1247, user: 'juan@mail.com', subject: 'No puedo canjear recompensa', status: 'critical', time: '15 min' },
+                { id: 1246, user: 'maria@mail.com', subject: 'Perdí todos mis puntos', status: 'critical', time: '32 min' },
+                { id: 1245, user: 'pedro@mail.com', subject: 'Pregunta sobre premium', status: 'open', time: '2 horas' }
+            ],
+            revenue: {
+                mrr: 28450,
+                mrrChange: 18.2,
+                arpu: 4.57,
+                arpuChange: 0.23,
+                ltv: 187.34,
+                ltvChange: 12.45,
+                monthly: 31280,
+                subscriptions: 28450,
+                oneTime: 2830
+            },
+            growth: [
+                { date: 'Feb 1', users: 5200 },
+                { date: 'Feb 4', users: 5800 },
+                { date: 'Feb 7', users: 6400 },
+                { date: 'Feb 10', users: 7100 },
+                { date: 'Feb 14', users: 7850 }
+            ]
+        };
 
-                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
-                    <div class="text-5xl mb-4">⚖️</div>
-                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Balance Justo</h3>
-                    <p class="text-gray-600">Visualiza el balance de la relación en tiempo real y mantén la equidad.</p>
-                </div>
+        // ==================== ADMIN DASHBOARD ====================
+        const AdminDashboard = () => {
+            const [activeSection, setActiveSection] = useState('dashboard');
+            const [sidebarOpen, setSidebarOpen] = useState(true);
+            const [selectedUser, setSelectedUser] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
 
-                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
-                    <div class="text-5xl mb-4">🔥</div>
-                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Rachas</h3>
-                    <p class="text-gray-600">Mantén rachas consecutivas de actividad y desbloquea bonificaciones especiales.</p>
-                </div>
+            const sections = [
+                { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+                { id: 'users', icon: '👥', label: 'Usuarios' },
+                { id: 'couples', icon: '💑', label: 'Parejas' },
+                { id: 'content', icon: '📝', label: 'Contenido' },
+                { id: 'analytics', icon: '📈', label: 'Analytics' },
+                { id: 'revenue', icon: '💰', label: 'Ingresos' },
+                { id: 'support', icon: '🎫', label: 'Soporte' },
+                { id: 'settings', icon: '⚙️', label: 'Configuración' }
+            ];
 
-                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
-                    <div class="text-5xl mb-4">🏆</div>
-                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Logros</h3>
-                    <p class="text-gray-600">Desbloquea achievements mientras completas acciones y alcanzas hitos.</p>
-                </div>
+            // ==================== DASHBOARD SECTION ====================
+            const renderDashboard = () => (
+                <div className="space-y-6 animate-slide-in">
+                    {/* Header */}
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard General</h1>
+                        <p className="text-gray-600">Vista general de métricas clave</p>
+                    </div>
 
-                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
-                    <div class="text-5xl mb-4">📊</div>
-                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Estadísticas</h3>
-                    <p class="text-gray-600">Analiza tu progreso con gráficos y métricas detalladas de tu relación.</p>
-                </div>
-            </div>
-        </div>
+                    {/* KPI Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="bg-white rounded-xl p-6 shadow-sm stat-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-2xl">👥</div>
+                                <span className={`badge ${mockData.kpis.activeUsersChange > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                    {mockData.kpis.activeUsersChange > 0 ? '↗' : '↘'} {Math.abs(mockData.kpis.activeUsersChange)}%
+                                </span>
+                            </div>
+                            <div className="mono text-3xl font-bold text-gray-900 mb-1">{mockData.kpis.activeUsers.toLocaleString()}</div>
+                            <div className="text-sm text-gray-600">Usuarios Activos Hoy</div>
+                            <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-blue-500 rounded-full" style={{ width: '92%' }}></div>
+                            </div>
+                        </div>
 
-        <!-- Demo Section -->
-        <div class="bg-purple-50 py-20 px-6">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl font-bold mb-8 gradient-text">¿Cómo Funciona?</h2>
-                <div class="space-y-6 text-left max-w-2xl mx-auto">
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <div class="flex items-start gap-4">
-                            <div class="text-3xl">1️⃣</div>
-                            <div>
-                                <h4 class="font-bold text-lg mb-2">Selecciona tu perfil</h4>
-                                <p class="text-gray-600">Cada miembro de la pareja tiene su propio perfil con puntos independientes.</p>
+                        <div className="bg-white rounded-xl p-6 shadow-sm stat-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center text-2xl">💑</div>
+                                <span className="badge bg-green-100 text-green-700">↗ {mockData.kpis.couplesChange}%</span>
+                            </div>
+                            <div className="mono text-3xl font-bold text-gray-900 mb-1">{mockData.kpis.totalCouples.toLocaleString()}</div>
+                            <div className="text-sm text-gray-600">Parejas Registradas</div>
+                            <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-pink-500 rounded-full" style={{ width: '78%' }}></div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-sm stat-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-2xl">⚡</div>
+                                <span className="badge bg-green-100 text-green-700">↗ {mockData.kpis.actionsChange}%</span>
+                            </div>
+                            <div className="mono text-3xl font-bold text-gray-900 mb-1">{mockData.kpis.actionsToday.toLocaleString()}</div>
+                            <div className="text-sm text-gray-600">Acciones Hoy</div>
+                            <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-green-500 rounded-full" style={{ width: '85%' }}></div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-sm stat-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-2xl">🎁</div>
+                                <span className="badge bg-red-100 text-red-700">↘ {Math.abs(mockData.kpis.rewardsChange)}%</span>
+                            </div>
+                            <div className="mono text-3xl font-bold text-gray-900 mb-1">{mockData.kpis.rewardsToday.toLocaleString()}</div>
+                            <div className="text-sm text-gray-600">Recompensas Hoy</div>
+                            <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-purple-500 rounded-full" style={{ width: '72%' }}></div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-sm stat-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center text-2xl">💰</div>
+                                <span className="badge bg-green-100 text-green-700">↗ {mockData.kpis.revenueChange}%</span>
+                            </div>
+                            <div className="mono text-3xl font-bold text-gray-900 mb-1">${mockData.kpis.revenueToday.toLocaleString()}</div>
+                            <div className="text-sm text-gray-600">Ingresos Hoy</div>
+                            <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-yellow-500 rounded-full" style={{ width: '88%' }}></div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-sm stat-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-2xl">🔥</div>
+                                <span className="badge bg-green-100 text-green-700">↗ {mockData.kpis.streakChange}</span>
+                            </div>
+                            <div className="mono text-3xl font-bold text-gray-900 mb-1">{mockData.kpis.avgStreak.toFixed(1)}</div>
+                            <div className="text-sm text-gray-600">Racha Promedio (días)</div>
+                            <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-orange-500 rounded-full" style={{ width: '65%' }}></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <div class="flex items-start gap-4">
-                            <div class="text-3xl">2️⃣</div>
-                            <div>
-                                <h4 class="font-bold text-lg mb-2">Registra acciones</h4>
-                                <p class="text-gray-600">Cada vez que hagas algo positivo, regístralo y gana puntos al instante.</p>
-                            </div>
+                    {/* Alerts */}
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">⚠️ Alertas Activas ({mockData.alerts.length})</h2>
+                        <div className="space-y-3">
+                            {mockData.alerts.map(alert => (
+                                <div key={alert.id} className={`p-4 rounded-lg border-l-4 ${
+                                    alert.type === 'critical' ? 'bg-red-50 border-red-500' :
+                                    alert.type === 'warning' ? 'bg-yellow-50 border-yellow-500' :
+                                    'bg-blue-50 border-blue-500'
+                                }`}>
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <div className={`font-semibold mb-1 ${
+                                                alert.type === 'critical' ? 'text-red-900' :
+                                                alert.type === 'warning' ? 'text-yellow-900' :
+                                                'text-blue-900'
+                                            }`}>
+                                                {alert.type === 'critical' ? '🔴' : alert.type === 'warning' ? '🟡' : '🟢'} 
+                                                {alert.type === 'critical' ? ' CRÍTICO' : alert.type === 'warning' ? ' ADVERTENCIA' : ' INFO'}
+                                            </div>
+                                            <div className="text-gray-700">{alert.title}</div>
+                                        </div>
+                                        <div className="text-sm text-gray-500 ml-4">Hace {alert.time}</div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <div class="flex items-start gap-4">
-                            <div class="text-3xl">3️⃣</div>
-                            <div>
-                                <h4 class="font-bold text-lg mb-2">Acumula y canjea</h4>
-                                <p class="text-gray-600">Acumula puntos y canjéalos por recompensas que ambos hayan acordado.</p>
-                            </div>
+                    {/* Growth Chart */}
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">📈 Crecimiento de Usuarios (Últimos 14 días)</h2>
+                        <div className="h-64 flex items-end justify-between gap-4">
+                            {mockData.growth.map((item, index) => (
+                                <div key={index} className="flex-1 flex flex-col items-center">
+                                    <div className="w-full bg-gradient-to-t from-purple-500 to-purple-300 rounded-t-lg transition-all hover:from-purple-600 hover:to-purple-400"
+                                         style={{ height: `${(item.users / 8000) * 100}%` }}>
+                                    </div>
+                                    <div className="mt-2 text-xs font-semibold text-gray-600">{item.date}</div>
+                                    <div className="text-xs mono text-gray-500">{item.users}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // ==================== USERS SECTION ====================
+            const renderUsers = () => (
+                <div className="space-y-6 animate-slide-in">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Usuarios</h1>
+                            <p className="text-gray-600">Administra y monitorea todos los usuarios</p>
+                        </div>
+                        <button className="px-6 py-3 gradient-bg text-white rounded-lg font-semibold hover:shadow-lg transition-all">
+                            + Agregar Usuario
+                        </button>
+                    </div>
+
+                    {/* Search and Filters */}
+                    <div className="bg-white rounded-xl shadow-sm p-4">
+                        <div className="flex gap-4">
+                            <input
+                                type="text"
+                                placeholder="🔍 Buscar por email, nombre o ID..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                            <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option>Todos los planes</option>
+                                <option>Premium</option>
+                                <option>Free</option>
+                            </select>
+                            <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option>Todos los estados</option>
+                                <option>Con pareja</option>
+                                <option>Sin pareja</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-xl p-6 shadow-md">
-                        <div class="flex items-start gap-4">
-                            <div class="text-3xl">4️⃣</div>
-                            <div>
-                                <h4 class="font-bold text-lg mb-2">Mantén el equilibrio</h4>
-                                <p class="text-gray-600">El sistema te avisa si hay desequilibrio para mantener la relación justa.</p>
+                    {/* Users Table */}
+                    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Plan</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Registro</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pareja</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Racha</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {mockData.users.map(user => (
+                                        <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="mono text-sm font-semibold text-gray-900">{user.id}</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="text-sm text-gray-900">{user.email}</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`badge ${user.plan === 'Premium' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
+                                                    {user.plan}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                                {user.registered}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {user.hasPair ? 
+                                                    <span className="text-green-600">✓</span> : 
+                                                    <span className="text-gray-400">✗</span>
+                                                }
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className="mono text-sm font-semibold text-orange-600">{user.streak}</span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                                <button 
+                                                    onClick={() => setSelectedUser(user)}
+                                                    className="text-purple-600 hover:text-purple-800 font-semibold"
+                                                >
+                                                    Ver detalles →
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* User Detail Modal */}
+                    {selectedUser && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-6" onClick={() => setSelectedUser(null)}>
+                            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin" onClick={e => e.stopPropagation()}>
+                                <div className="gradient-bg p-6 text-white">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <h2 className="text-2xl font-bold mb-2">Detalles del Usuario</h2>
+                                            <p className="opacity-90">ID: {selectedUser.id}</p>
+                                        </div>
+                                        <button onClick={() => setSelectedUser(null)} className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2">
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div className="p-6 space-y-6">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900 mb-4">📋 Información Básica</h3>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <div className="text-sm text-gray-600 mb-1">Email</div>
+                                                <div className="font-semibold text-gray-900">{selectedUser.email}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-gray-600 mb-1">Plan</div>
+                                                <span className={`badge ${selectedUser.plan === 'Premium' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}`}>
+                                                    {selectedUser.plan}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-gray-600 mb-1">Fecha de registro</div>
+                                                <div className="font-semibold text-gray-900">{selectedUser.registered}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-gray-600 mb-1">Racha actual</div>
+                                                <div className="font-semibold text-orange-600 mono">{selectedUser.streak} días 🔥</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900 mb-4">📊 Métricas de Uso</h3>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div className="bg-blue-50 rounded-lg p-4 text-center">
+                                                <div className="text-2xl font-bold text-blue-600 mono">348</div>
+                                                <div className="text-sm text-gray-600 mt-1">Acciones</div>
+                                            </div>
+                                            <div className="bg-purple-50 rounded-lg p-4 text-center">
+                                                <div className="text-2xl font-bold text-purple-600 mono">23</div>
+                                                <div className="text-sm text-gray-600 mt-1">Recompensas</div>
+                                            </div>
+                                            <div className="bg-green-50 rounded-lg p-4 text-center">
+                                                <div className="text-2xl font-bold text-green-600 mono">1,250</div>
+                                                <div className="text-sm text-gray-600 mt-1">Puntos</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900 mb-4">🔧 Acciones Administrativas</h3>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button className="px-4 py-3 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-semibold">
+                                                🎁 Otorgar Premium
+                                            </button>
+                                            <button className="px-4 py-3 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-semibold">
+                                                📧 Enviar Email
+                                            </button>
+                                            <button className="px-4 py-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-semibold">
+                                                💰 Ajustar Puntos
+                                            </button>
+                                            <button className="px-4 py-3 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors font-semibold">
+                                                📝 Agregar Nota
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-4 border-t">
+                                        <button className="w-full px-4 py-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-semibold">
+                                            🗑️ Eliminar Cuenta
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+
+            // ==================== COUPLES SECTION ====================
+            const renderCouples = () => (
+                <div className="space-y-6 animate-slide-in">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Parejas</h1>
+                        <p className="text-gray-600">Monitorea y administra parejas registradas</p>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">ID</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Usuario 1</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Usuario 2</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Desde</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Estado</th>
+                                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                    {mockData.couples.map(couple => (
+                                        <tr key={couple.id} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4">
+                                                <span className="mono text-sm font-semibold">{couple.id}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm">{couple.user1}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm">{couple.user2}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className="text-sm text-gray-600">{couple.since}</span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`badge ${couple.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                    {couple.status === 'active' ? '✓ Activo' : '⏳ Pendiente'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <button className="text-purple-600 hover:text-purple-800 font-semibold">
+                                                    Ver detalles →
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // ==================== REVENUE SECTION ====================
+            const renderRevenue = () => (
+                <div className="space-y-6 animate-slide-in">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Ingresos y Monetización</h1>
+                        <p className="text-gray-600">Analiza el rendimiento financiero</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white rounded-xl p-6 shadow-sm stat-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-2xl">💰</div>
+                                <span className="badge bg-green-100 text-green-700">↗ {mockData.revenue.mrrChange}%</span>
+                            </div>
+                            <div className="mono text-3xl font-bold text-gray-900 mb-1">${mockData.revenue.mrr.toLocaleString()}</div>
+                            <div className="text-sm text-gray-600">MRR (Monthly Recurring Revenue)</div>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-sm stat-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-2xl">👤</div>
+                                <span className="badge bg-green-100 text-green-700">↗ ${mockData.revenue.arpuChange}</span>
+                            </div>
+                            <div className="mono text-3xl font-bold text-gray-900 mb-1">${mockData.revenue.arpu}</div>
+                            <div className="text-sm text-gray-600">ARPU (Average Revenue Per User)</div>
+                        </div>
+
+                        <div className="bg-white rounded-xl p-6 shadow-sm stat-card">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-2xl">📈</div>
+                                <span className="badge bg-green-100 text-green-700">↗ ${mockData.revenue.ltvChange}</span>
+                            </div>
+                            <div className="mono text-3xl font-bold text-gray-900 mb-1">${mockData.revenue.ltv}</div>
+                            <div className="text-sm text-gray-600">LTV (Customer Lifetime Value)</div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl p-6 shadow-sm">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">💵 Ingresos del Mes</h2>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-gray-600">Total del mes</span>
+                                <span className="text-2xl font-bold text-gray-900 mono">${mockData.revenue.monthly.toLocaleString()}</span>
+                            </div>
+                            <div className="h-px bg-gray-200"></div>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="font-semibold text-gray-900">Suscripciones</div>
+                                    <div className="text-sm text-gray-500">Premium mensual/anual</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="font-bold text-purple-600 mono">${mockData.revenue.subscriptions.toLocaleString()}</div>
+                                    <div className="text-sm text-gray-500">91%</div>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="font-semibold text-gray-900">Compras In-App</div>
+                                    <div className="text-sm text-gray-500">Temas, paquetes, etc.</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="font-bold text-blue-600 mono">${mockData.revenue.oneTime.toLocaleString()}</div>
+                                    <div className="text-sm text-gray-500">9%</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            );
 
-        <!-- CTA Section -->
-        <div class="gradient-bg text-white py-20 px-6">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl font-bold mb-6">¡Comienza Ahora!</h2>
-                <p class="text-xl mb-8 opacity-90">Es gratis y funciona en cualquier navegador. No necesitas instalación.</p>
-                <div class="flex flex-col md:flex-row gap-4 justify-center">
-                    <a href="/app/" class="inline-block px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:shadow-2xl transition-all transform hover:scale-105">
-                        🚀 Probar la App
-                    </a>
-                </div>
-            </div>
-        </div>
+            // ==================== SUPPORT SECTION ====================
+            const renderSupport = () => (
+                <div className="space-y-6 animate-slide-in">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Soporte y Tickets</h1>
+                        <p className="text-gray-600">Gestiona solicitudes de ayuda</p>
+                    </div>
 
-        <!-- Footer -->
-        <div class="bg-gray-900 text-white py-12 px-6">
-            <div class="max-w-6xl mx-auto text-center">
-                <div class="text-4xl mb-4">💜</div>
-                <h3 class="text-2xl font-bold mb-4">Matripuntos</h3>
-                <p class="text-gray-400 mb-6">Gamificación para relaciones más equilibradas y divertidas</p>
-                <div class="flex gap-6 justify-center text-sm text-gray-400">
-                    <a href="/README.md" class="hover:text-white transition-colors">Documentación</a>
-                    <a href="/TECHNICAL_PLAN.md" class="hover:text-white transition-colors">Plan Técnico</a>
-                    <a href="/admin/" class="hover:text-white transition-colors">Admin</a>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-red-50 rounded-xl p-6 border-2 border-red-200">
+                            <div className="text-4xl font-bold text-red-600 mono mb-2">5</div>
+                            <div className="text-sm font-semibold text-red-800">🔴 Críticos</div>
+                        </div>
+                        <div className="bg-yellow-50 rounded-xl p-6 border-2 border-yellow-200">
+                            <div className="text-4xl font-bold text-yellow-600 mono mb-2">12</div>
+                            <div className="text-sm font-semibold text-yellow-800">🟡 En progreso</div>
+                        </div>
+                        <div className="bg-green-50 rounded-xl p-6 border-2 border-green-200">
+                            <div className="text-4xl font-bold text-green-600 mono mb-2">34</div>
+                            <div className="text-sm font-semibold text-green-800">✅ Resueltos hoy</div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div className="p-6 border-b">
+                            <h2 className="text-xl font-bold text-gray-900">🔴 Tickets Críticos</h2>
+                        </div>
+                        <div className="divide-y divide-gray-200">
+                            {mockData.tickets.map(ticket => (
+                                <div key={ticket.id} className="p-6 hover:bg-gray-50 transition-colors">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <span className={`badge ${ticket.status === 'critical' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                                                    #{ticket.id}
+                                                </span>
+                                                <span className="text-sm text-gray-600">{ticket.user}</span>
+                                                <span className="text-sm text-gray-400">· Hace {ticket.time}</span>
+                                            </div>
+                                            <div className="font-semibold text-gray-900 mb-2">{ticket.subject}</div>
+                                            <button className="text-purple-600 hover:text-purple-800 font-semibold text-sm">
+                                                Tomar caso →
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
-                <p class="mt-8 text-gray-500 text-sm">© 2026 Matripuntos. Desarrollado con 💜 por Claude</p>
-            </div>
-        </div>
-    </div>
+            );
+
+            // ==================== SETTINGS SECTION ====================
+            const renderSettings = () => (
+                <div className="space-y-6 animate-slide-in">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Configuración del Sistema</h1>
+                        <p className="text-gray-600">Ajusta parámetros globales</p>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">📱 Versiones de la App</h2>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                                <div>
+                                    <div className="font-semibold text-gray-900">iOS</div>
+                                    <div className="text-sm text-gray-600">Versión actual</div>
+                                </div>
+                                <div className="text-2xl font-bold text-blue-600 mono">v1.2.4</div>
+                            </div>
+                            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                                <div>
+                                    <div className="font-semibold text-gray-900">Android</div>
+                                    <div className="text-sm text-gray-600">Versión actual</div>
+                                </div>
+                                <div className="text-2xl font-bold text-green-600 mono">v1.2.3</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">💰 Planes y Precios</h2>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-4 border-2 border-purple-200 rounded-lg">
+                                <div>
+                                    <div className="font-semibold text-gray-900">Premium Mensual</div>
+                                    <div className="text-sm text-gray-600">Suscripción mensual</div>
+                                </div>
+                                <div className="text-2xl font-bold text-purple-600 mono">$4.99</div>
+                            </div>
+                            <div className="flex items-center justify-between p-4 border-2 border-purple-200 rounded-lg">
+                                <div>
+                                    <div className="font-semibold text-gray-900">Premium Anual</div>
+                                    <div className="text-sm text-gray-600">33% descuento</div>
+                                </div>
+                                <div className="text-2xl font-bold text-purple-600 mono">$39.99</div>
+                            </div>
+                        </div>
+                        <button className="mt-4 w-full px-4 py-3 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors font-semibold">
+                            Editar Precios
+                        </button>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-sm p-6">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6">🚩 Feature Flags</h2>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between p-4 border rounded-lg">
+                                <div>
+                                    <div className="font-semibold text-gray-900">Chat de parejas</div>
+                                    <div className="text-sm text-gray-600">Mensajería in-app</div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="badge bg-green-100 text-green-700">100% activo</span>
+                                    <div className="w-12 h-6 bg-green-500 rounded-full relative">
+                                        <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between p-4 border rounded-lg">
+                                <div>
+                                    <div className="font-semibold text-gray-900">Calendario inteligente</div>
+                                    <div className="text-sm text-gray-600">A/B testing</div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="badge bg-yellow-100 text-yellow-700">50% activo</span>
+                                    <div className="w-12 h-6 bg-yellow-500 rounded-full relative">
+                                        <div className="absolute left-3 top-1 w-4 h-4 bg-white rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between p-4 border rounded-lg">
+                                <div>
+                                    <div className="font-semibold text-gray-900">Modo familiar</div>
+                                    <div className="text-sm text-gray-600">En desarrollo</div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="badge bg-gray-100 text-gray-700">0% activo</span>
+                                    <div className="w-12 h-6 bg-gray-300 rounded-full relative">
+                                        <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // ==================== SIDEBAR ====================
+            const Sidebar = () => (
+                <div className={`sidebar fixed top-0 left-0 h-full w-64 gradient-bg text-white z-40 ${sidebarOpen ? '' : 'closed'}`}>
+                    <div className="p-6">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="text-4xl">💜</div>
+                            <div>
+                                <div className="text-xl font-bold">Matripuntos</div>
+                                <div className="text-sm opacity-75">Admin Panel</div>
+                            </div>
+                        </div>
+
+                        <nav className="space-y-2">
+                            {sections.map(section => (
+                                <button
+                                    key={section.id}
+                                    onClick={() => setActiveSection(section.id)}
+                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                                        activeSection === section.id
+                                            ? 'bg-white bg-opacity-20 font-semibold'
+                                            : 'hover:bg-white hover:bg-opacity-10'
+                                    }`}
+                                >
+                                    <span className="text-2xl">{section.icon}</span>
+                                    <span>{section.label}</span>
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white border-opacity-20">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-lg">
+                                👤
+                            </div>
+                            <div>
+                                <div className="font-semibold">Admin</div>
+                                <div className="text-xs opacity-75">admin@matripuntos.com</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // ==================== HEADER ====================
+            const Header = () => (
+                <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+                    <div className="px-6 py-4 flex items-center justify-between">
+                        <button
+                            onClick={() => setSidebarOpen(!sidebarOpen)}
+                            className="lg:hidden text-2xl"
+                        >
+                            ☰
+                        </button>
+                        <div className="flex-1"></div>
+                        <div className="flex items-center gap-4">
+                            <div className="relative">
+                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                                    3
+                                </span>
+                                <button className="text-2xl hover:opacity-70 transition-opacity">
+                                    🔔
+                                </button>
+                            </div>
+                            <div className="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-bold">
+                                A
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            );
+
+            // ==================== MAIN RENDER ====================
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <Sidebar />
+                    <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-64' : 'ml-0'}`}>
+                        <Header />
+                        <main className="p-6">
+                            {activeSection === 'dashboard' && renderDashboard()}
+                            {activeSection === 'users' && renderUsers()}
+                            {activeSection === 'couples' && renderCouples()}
+                            {activeSection === 'revenue' && renderRevenue()}
+                            {activeSection === 'support' && renderSupport()}
+                            {activeSection === 'settings' && renderSettings()}
+                            {activeSection === 'content' && (
+                                <div className="text-center py-20">
+                                    <div className="text-6xl mb-4">📝</div>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Gestión de Contenido</h2>
+                                    <p className="text-gray-600">Administra acciones, recompensas y catálogos</p>
+                                </div>
+                            )}
+                            {activeSection === 'analytics' && (
+                                <div className="text-center py-20">
+                                    <div className="text-6xl mb-4">📈</div>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Analytics Avanzado</h2>
+                                    <p className="text-gray-600">Reportes detallados y métricas de producto</p>
+                                </div>
+                            )}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        // ==================== RENDER ====================
+        ReactDOM.render(<AdminDashboard />, document.getElementById('root'));
+    </script>
 </body>
 </html>
