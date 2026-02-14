@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matripuntos - Gamificación para Parejas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Urbanist', sans-serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Hero Section -->
+        <div class="gradient-bg text-white py-20 px-6">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="text-8xl mb-6 animate-float">💜</div>
+                <h1 class="text-5xl md:text-6xl font-bold mb-4">Matripuntos</h1>
+                <p class="text-xl md:text-2xl mb-8 opacity-90">Sistema de gamificación para parejas</p>
+                <p class="text-lg mb-12 max-w-2xl mx-auto">
+                    Transforma tu relación en un juego divertido. Gana puntos por acciones positivas,
+                    canjea recompensas y mantén un balance justo en tu pareja.
+                </p>
+                <div class="flex flex-col md:flex-row gap-4 justify-center">
+                    <a href="/app/" class="inline-block px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:shadow-2xl transition-all transform hover:scale-105">
+                        🎮 Abrir App Principal
+                    </a>
+                    <a href="/admin/" class="inline-block px-8 py-4 bg-white bg-opacity-20 backdrop-blur text-white rounded-xl font-bold text-lg hover:bg-opacity-30 transition-all">
+                        📊 Panel Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="max-w-6xl mx-auto py-20 px-6">
+            <h2 class="text-4xl font-bold text-center mb-16 gradient-text">Características Principales</h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
+                    <div class="text-5xl mb-4">⚡</div>
+                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Sistema de Puntos</h3>
+                    <p class="text-gray-600">Gana puntos por cada acción positiva. Lavar platos, cocinar, dar masajes... ¡todo cuenta!</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
+                    <div class="text-5xl mb-4">🎁</div>
+                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Recompensas</h3>
+                    <p class="text-gray-600">Canjea tus puntos por recompensas personalizadas: noche de películas, salidas, días libres...</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
+                    <div class="text-5xl mb-4">⚖️</div>
+                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Balance Justo</h3>
+                    <p class="text-gray-600">Visualiza el balance de la relación en tiempo real y mantén la equidad.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
+                    <div class="text-5xl mb-4">🔥</div>
+                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Rachas</h3>
+                    <p class="text-gray-600">Mantén rachas consecutivas de actividad y desbloquea bonificaciones especiales.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
+                    <div class="text-5xl mb-4">🏆</div>
+                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Logros</h3>
+                    <p class="text-gray-600">Desbloquea achievements mientras completas acciones y alcanzas hitos.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all">
+                    <div class="text-5xl mb-4">📊</div>
+                    <h3 class="text-2xl font-bold mb-3 text-gray-800">Estadísticas</h3>
+                    <p class="text-gray-600">Analiza tu progreso con gráficos y métricas detalladas de tu relación.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Section -->
+        <div class="bg-purple-50 py-20 px-6">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl font-bold mb-8 gradient-text">¿Cómo Funciona?</h2>
+                <div class="space-y-6 text-left max-w-2xl mx-auto">
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">1️⃣</div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2">Selecciona tu perfil</h4>
+                                <p class="text-gray-600">Cada miembro de la pareja tiene su propio perfil con puntos independientes.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">2️⃣</div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2">Registra acciones</h4>
+                                <p class="text-gray-600">Cada vez que hagas algo positivo, regístralo y gana puntos al instante.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">3️⃣</div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2">Acumula y canjea</h4>
+                                <p class="text-gray-600">Acumula puntos y canjéalos por recompensas que ambos hayan acordado.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 shadow-md">
+                        <div class="flex items-start gap-4">
+                            <div class="text-3xl">4️⃣</div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2">Mantén el equilibrio</h4>
+                                <p class="text-gray-600">El sistema te avisa si hay desequilibrio para mantener la relación justa.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="gradient-bg text-white py-20 px-6">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl font-bold mb-6">¡Comienza Ahora!</h2>
+                <p class="text-xl mb-8 opacity-90">Es gratis y funciona en cualquier navegador. No necesitas instalación.</p>
+                <div class="flex flex-col md:flex-row gap-4 justify-center">
+                    <a href="/app/" class="inline-block px-8 py-4 bg-white text-purple-600 rounded-xl font-bold text-lg hover:shadow-2xl transition-all transform hover:scale-105">
+                        🚀 Probar la App
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-900 text-white py-12 px-6">
+            <div class="max-w-6xl mx-auto text-center">
+                <div class="text-4xl mb-4">💜</div>
+                <h3 class="text-2xl font-bold mb-4">Matripuntos</h3>
+                <p class="text-gray-400 mb-6">Gamificación para relaciones más equilibradas y divertidas</p>
+                <div class="flex gap-6 justify-center text-sm text-gray-400">
+                    <a href="/README.md" class="hover:text-white transition-colors">Documentación</a>
+                    <a href="/TECHNICAL_PLAN.md" class="hover:text-white transition-colors">Plan Técnico</a>
+                    <a href="/admin/" class="hover:text-white transition-colors">Admin</a>
+                </div>
+                <p class="mt-8 text-gray-500 text-sm">© 2026 Matripuntos. Desarrollado con 💜 por Claude</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
